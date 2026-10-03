@@ -1,6 +1,17 @@
 ## Obsidian Auto Link Title
 ![Auto linking example](auto-link-title.gif)
 
+### Installing With BRAT
+This fork can be installed with the [BRAT](https://github.com/TfTHacker/obsidian42-brat) (Beta Reviewers Auto-update Tool) plugin:
+
+1. Install **BRAT** from Obsidian's Community Plugins browser and enable it.
+2. Open the command palette and run **BRAT: Plugins: Add a beta plugin for testing**.
+3. Enter `https://github.com/coreyx/obsidian-auto-link-title` as the repository.
+4. Choose the latest version (or leave it as the default) and select **Add Plugin**.
+5. If you already have the official Auto Link Title installed, BRAT replaces it with this fork, since both use the same plugin ID. Otherwise, enable **Auto Link Title** in **Settings → Community plugins**.
+
+BRAT checks for updates on startup, or you can run **BRAT: Check for updates to all beta plugins** to update manually.
+
 ### Automatically Title New Links
 This plugin automatically fetches the webpage to extract link titles when they're pasted, creating a markdown link with the correct title set.
 
