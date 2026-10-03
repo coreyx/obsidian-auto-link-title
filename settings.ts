@@ -12,6 +12,7 @@ export interface AutoLinkTitleSettings {
   enhanceDefaultPaste: boolean;
   enhanceDropEvents: boolean;
   websiteBlacklist: string;
+  websiteIgnoreList: string;
   maximumTitleLength: number;
   useNewScraper: boolean;
   linkPreviewApiKey: string;
@@ -32,6 +33,7 @@ export const DEFAULT_SETTINGS: AutoLinkTitleSettings = {
   shouldPreserveSelectionAsTitle: false,
   enhanceDropEvents: true,
   websiteBlacklist: "",
+  websiteIgnoreList: "",
   maximumTitleLength: 0,
   useNewScraper: false,
   linkPreviewApiKey: "",
@@ -121,6 +123,21 @@ export class AutoLinkTitleSettingTab extends PluginSettingTab {
           .setPlaceholder("localhost, tiktok.com")
           .onChange(async (value) => {
             this.plugin.settings.websiteBlacklist = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Website Ignore List")
+      .setDesc(
+        "List of strings (comma separated) that disable all link processing. Matching links are pasted or dropped as-is, without being converted to markdown links. Can be URLs or arbitrary text."
+      )
+      .addTextArea((val) =>
+        val
+          .setValue(this.plugin.settings.websiteIgnoreList)
+          .setPlaceholder("localhost, tiktok.com")
+          .onChange(async (value) => {
+            this.plugin.settings.websiteIgnoreList = value;
             await this.plugin.saveSettings();
           })
       );

@@ -83,6 +83,14 @@ export default class AutoLinkTitle extends Plugin {
 
     let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
 
+    // Leave ignored links untouched, checking only the URL part of a markdown link
+    const url = CheckIf.isLinkedUrl(selectedText)
+      ? this.getUrlFromLink(selectedText)
+      : selectedText;
+    if (this.isIgnored(url)) {
+      return;
+    }
+
     // If the cursor is on a raw html link, convert to a markdown link and fetch title
     if (CheckIf.isUrl(selectedText)) {
       this.convertUrlToTitledLink(editor, selectedText);
@@ -110,6 +118,12 @@ export default class AutoLinkTitle extends Plugin {
   // Simulate standard paste but using editor.replaceSelection with clipboard text since we can't seem to dispatch a paste event.
   async manualPasteUrlWithTitle(editor: Editor): Promise<void> {
     const clipboardText = await navigator.clipboard.readText();
+
+    // Ignored links are pasted as-is.
+    if (this.isIgnored(clipboardText)) {
+      editor.replaceSelection(clipboardText);
+      return;
+    }
 
     // Only attempt fetch if online
     if (!navigator.onLine) {
@@ -169,6 +183,11 @@ export default class AutoLinkTitle extends Plugin {
       return;
     }
 
+    // Ignored links are left entirely to the default paste handler.
+    if (this.isIgnored(clipboardText)) {
+      return;
+    }
+
     // Only attempt fetch if online
     if (!navigator.onLine) {
       new Notice("No internet connection. Cannot fetch title.");
@@ -216,6 +235,12 @@ export default class AutoLinkTitle extends Plugin {
     if (!CheckIf.isUrl(dropText) || CheckIf.isImage(dropText)) {
       return;
     }
+
+    // Ignored links are left entirely to the default drop handler.
+    if (this.isIgnored(dropText)) {
+      return;
+    }
+
     // Only attempt fetch if online
     if (!navigator.onLine) {
       new Notice("No internet connection. Cannot fetch title.");
@@ -249,11 +274,22 @@ export default class AutoLinkTitle extends Plugin {
 
   async isBlacklisted(url: string): Promise<boolean> {
     await this.loadSettings();
-    this.blacklist = this.settings.websiteBlacklist
+    this.blacklist = this.parseSiteList(this.settings.websiteBlacklist);
+    return this.blacklist.some((site) => url.includes(site));
+  }
+
+  // Synchronous so paste/drop handlers can bail out before calling preventDefault
+  isIgnored(url: string): boolean {
+    return this.parseSiteList(this.settings.websiteIgnoreList).some((site) =>
+      url.includes(site)
+    );
+  }
+
+  private parseSiteList(list: string): Array<string> {
+    return list
       .split(/,|\n/)
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
-    return this.blacklist.some((site) => url.includes(site));
   }
 
   async convertUrlToTitledLink(editor: Editor, url: string): Promise<void> {
